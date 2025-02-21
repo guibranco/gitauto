@@ -151,8 +151,7 @@ def run_command(command: str, cwd: str) -> str:
             check=True,
             cwd=cwd,
             text=True,
-            shell=True,
-        )
+            shell=False)
         return result.stdout
     except subprocess.CalledProcessError as e:
         # 127: Command not found so check if Git is installed
