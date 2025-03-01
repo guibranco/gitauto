@@ -10,6 +10,7 @@ import chardet
 from config import UTF8
 from utils.detect_new_line import detect_line_break
 from utils.handle_exceptions import handle_exceptions
+from security import safe_command
 
 
 def apply_patch(original_text: str, diff_text: str):
@@ -66,9 +67,7 @@ def apply_patch(original_text: str, diff_text: str):
         # Modified or deleted file
         else:
             with open(file=diff_fname, mode="r", encoding=UTF8, newline="\n") as diff:
-                subprocess.run(
-                    # See https://www.man7.org/linux/man-pages/man1/patch.1.html
-                    args=["patch", "-u", "--fuzz=3", "--forward", org_fname],
+                safe_command.run(subprocess.run, args=["patch", "-u", "--fuzz=3", "--forward", org_fname],
                     input=diff.read(),
                     text=True,  # If True, input and output are strings
                     encoding=UTF8,
@@ -145,8 +144,7 @@ def get_file_content(file_path: str) -> str:
 
 def run_command(command: str, cwd: str) -> str:
     try:
-        result: subprocess.CompletedProcess[str] = subprocess.run(
-            args=command,
+        result: subprocess.CompletedProcess[str] = safe_command.run(subprocess.run, args=command,
             capture_output=True,
             check=True,
             cwd=cwd,
@@ -159,8 +157,7 @@ def run_command(command: str, cwd: str) -> str:
         if e.returncode == 127:
             try:
                 # Check if Git is installed
-                version_result = subprocess.run(
-                    args="git --version",
+                version_result = safe_command.run(subprocess.run, args="git --version",
                     capture_output=True,
                     check=True,
                     text=True,
