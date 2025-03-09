@@ -7,13 +7,14 @@ from services.github.github_manager import get_remote_file_content
 from services.github.github_types import BaseArgs
 from services.github.graphql_client import get_graphql_client
 from utils.handle_exceptions import handle_exceptions
+from security import safe_requests
 
 
 @handle_exceptions(default_return_value=("", ""), raise_on_error=False)
 def get_pull_request(url: str, token: str):
     """https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#get-a-pull-request"""
     headers = create_headers(token=token)
-    res = requests.get(url=url, headers=headers, timeout=TIMEOUT)
+    res = safe_requests.get(url=url, headers=headers, timeout=TIMEOUT)
     res.raise_for_status()
     res_json = res.json()
     title: str = res_json["title"]
@@ -30,7 +31,7 @@ def get_pull_request_file_contents(url: str, base_args: BaseArgs):
     page = 1
     while True:
         params = {"per_page": PER_PAGE, "page": page}
-        response = requests.get(
+        response = safe_requests.get(
             url=url, headers=headers, params=params, timeout=TIMEOUT
         )
         response.raise_for_status()
@@ -57,7 +58,7 @@ def get_pull_request_file_changes(url: str, token: str):
     page = 1
     while True:
         params = {"per_page": PER_PAGE, "page": page}
-        response = requests.get(
+        response = safe_requests.get(
             url=url, headers=headers, params=params, timeout=TIMEOUT
         )
         response.raise_for_status()

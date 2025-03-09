@@ -1,10 +1,10 @@
 from bs4 import BeautifulSoup
 from googlesearch import search
-from requests import get
 from config import TIMEOUT
 from constants.requests import USER_AGENT
 from services.github.github_types import BaseArgs
 from utils.handle_exceptions import handle_exceptions
+from security import safe_requests
 
 NUM_RESULTS_DEFAULT = 1
 UNNECESSARY_TAGS = [
@@ -45,7 +45,7 @@ def search_urls(query: str, num_results: int = NUM_RESULTS_DEFAULT, lang: str = 
 @handle_exceptions(default_return_value=None, raise_on_error=False, api_type="google")
 def scrape_content_from_url(url: str):
     headers = {"User-Agent": USER_AGENT}
-    response = get(url, headers=headers, timeout=TIMEOUT)
+    response = safe_requests.get(url, headers=headers, timeout=TIMEOUT)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, "html.parser")

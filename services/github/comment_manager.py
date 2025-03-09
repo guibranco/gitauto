@@ -1,10 +1,11 @@
-from requests import delete, get, post
+from requests import delete, post
 from config import GITHUB_API_URL, TIMEOUT, GITHUB_APP_USER_NAME
 from constants.messages import COMPLETED_PR
 from services.github.create_headers import create_headers
 from services.github.github_types import BaseArgs
 from utils.handle_exceptions import handle_exceptions
 from utils.text_copy import UPDATE_COMMENT_FOR_422
+from security import safe_requests
 
 
 @handle_exceptions(default_return_value=None, raise_on_error=False)
@@ -28,7 +29,7 @@ def get_all_comments(base_args: BaseArgs):
     )
     url = f"{GITHUB_API_URL}/repos/{owner}/{repo}/issues/{issue_number}/comments"
     headers: dict[str, str] = create_headers(token=token)
-    response = get(url=url, headers=headers, timeout=TIMEOUT)
+    response = safe_requests.get(url=url, headers=headers, timeout=TIMEOUT)
     response.raise_for_status()
     comments: list[dict] = response.json()
     # print(f"All comments: {dumps(obj=comments, indent=2)}")

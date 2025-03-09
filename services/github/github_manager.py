@@ -63,6 +63,7 @@ from utils.handle_exceptions import handle_exceptions
 from utils.parse_urls import parse_github_url
 from utils.progress_bar import create_progress_bar
 from utils.text_copy import request_issue_comment, request_limit_reached
+from security import safe_requests
 
 
 @handle_exceptions(default_return_value=None, raise_on_error=False)
@@ -174,7 +175,7 @@ def commit_changes_to_remote_branch(
         raise ValueError("new_branch is not set.")
     url = f"{GITHUB_API_URL}/repos/{owner}/{repo}/contents/{file_path}?ref={new_branch}"
     headers = create_headers(token=token)
-    get_response = requests.get(url=url, headers=headers, timeout=TIMEOUT)
+    get_response = safe_requests.get(url=url, headers=headers, timeout=TIMEOUT)
 
     # If 404 error, the file doesn't exist.
     if get_response.status_code == 404:
@@ -426,7 +427,7 @@ def get_installed_owners_and_repos(token: str) -> list[dict[str, int | str]]:
     owners_repos = []
     page = 1
     while True:
-        response: requests.Response = requests.get(
+        response: requests.Response = safe_requests.get(
             url=f"{GITHUB_API_URL}/installation/repositories",
             headers=create_headers(token=token),
             params={"per_page": 100, "page": page},
@@ -462,7 +463,7 @@ def get_issue_comments(
 ) -> list[str]:
     """https://docs.github.com/en/rest/issues/comments#list-issue-comments"""
     owner, repo, token = base_args["owner"], base_args["repo"], base_args["token"]
-    response = requests.get(
+    response = safe_requests.get(
         url=f"{GITHUB_API_URL}/repos/{owner}/{repo}/issues/{issue_number}/comments",
         headers=create_headers(token=token),
         timeout=TIMEOUT,
@@ -493,7 +494,7 @@ def get_latest_remote_commit_sha(clone_url: str, base_args: BaseArgs) -> str:
     )
     token = base_args["token"]
     try:
-        response: requests.Response = requests.get(
+        response: requests.Response = safe_requests.get(
             url=f"{GITHUB_API_URL}/repos/{owner}/{repo}/git/ref/heads/{branch}",
             headers=create_headers(token=token),
             timeout=TIMEOUT,
@@ -529,7 +530,7 @@ def get_oldest_unassigned_open_issue(
     """Get an oldest unassigned open issue without "gitauto" label in a repository. https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues"""
     page = 1
     while True:
-        response: requests.Response = requests.get(
+        response: requests.Response = safe_requests.get(
             url=f"{GITHUB_API_URL}/repos/{owner}/{repo}/issues",
             headers=create_headers(token=token),
             params={
@@ -566,7 +567,7 @@ def get_oldest_unassigned_open_issue(
 @handle_exceptions(default_return_value=None, raise_on_error=False)
 def get_owner_name(owner_id: int, token: str) -> str | None:
     """https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id"""
-    response: requests.Response = requests.get(
+    response: requests.Response = safe_requests.get(
         url=f"{GITHUB_API_URL}/user/{owner_id}",
         headers=create_headers(token=token),
         timeout=TIMEOUT,
@@ -601,7 +602,7 @@ def get_remote_file_content(
     )
     url = f"{GITHUB_API_URL}/repos/{owner}/{repo}/contents/{file_path}?ref={ref}"
     headers: dict[str, str] = create_headers(token=token)
-    response = requests.get(url=url, headers=headers, timeout=TIMEOUT)
+    response = safe_requests.get(url=url, headers=headers, timeout=TIMEOUT)
 
     # If 404 error, return early. Otherwise, raise a HTTPError
     if response.status_code == 404:
@@ -675,7 +676,7 @@ def get_remote_file_content_by_url(url: str, token: str) -> str:
     start, end = parts["start_line"], parts["end_line"]
     url: str = f"{GITHUB_API_URL}/repos/{owner}/{repo}/contents/{file_path}?ref={ref}"
     headers: dict[str, str] = create_headers(token=token)
-    response = requests.get(url=url, headers=headers, timeout=TIMEOUT)
+    response = safe_requests.get(url=url, headers=headers, timeout=TIMEOUT)
     response.raise_for_status()
     response_json = response.json()
     encoded_content: str = response_json["content"]  # Base64 encoded content
@@ -710,7 +711,7 @@ def get_remote_file_tree(base_args: BaseArgs, max_files: int = 1000):
     url = f"{GITHUB_API_URL}/repos/{owner}/{repo}/git/trees/{ref}"
     headers: dict[str, str] = create_headers(token=base_args["token"])
     params: dict[str, int | str] = {"recursive": 1}
-    response = requests.get(url=url, headers=headers, params=params, timeout=TIMEOUT)
+    response = safe_requests.get(url=url, headers=headers, params=params, timeout=TIMEOUT)
 
     # Handle empty repository case
     if response.status_code == 409 and "Git Repository is empty" in response.text:
@@ -782,7 +783,7 @@ def search_remote_file_contents(query: str, base_args: BaseArgs) -> str:
     url = f"{GITHUB_API_URL}/search/code"
     headers: dict[str, str] = create_headers(token=token)
     headers["Accept"] = "application/vnd.github.text-match+json"
-    response = requests.get(url=url, headers=headers, params=params, timeout=TIMEOUT)
+    response = safe_requests.get(url=url, headers=headers, params=params, timeout=TIMEOUT)
     response.raise_for_status()
     response_json = response.json()
     files = []
@@ -862,7 +863,7 @@ def get_user_public_email(username: str, token: str) -> str | None:
         return None
 
     # If the user is not a bot, get the user's email
-    response: requests.Response = requests.get(
+    response: requests.Response = safe_requests.get(
         url=f"{GITHUB_API_URL}/users/{username}",
         headers=create_headers(token=token),
         timeout=TIMEOUT,

@@ -1,14 +1,15 @@
 from base64 import b64encode
-from requests import get, post
+from requests import post
 from config import GITHUB_API_URL, TIMEOUT, UTF8
 from services.github.create_headers import create_headers
 from services.github.github_types import BaseArgs
 from utils.handle_exceptions import handle_exceptions
+from security import safe_requests
 
 
 @handle_exceptions(default_return_value="", raise_on_error=False)
 def get_base64(url: str) -> str:
-    response = get(url=url, timeout=TIMEOUT)
+    response = safe_requests.get(url=url, timeout=TIMEOUT)
     response.raise_for_status()
     base64_image: str = b64encode(response.content).decode(encoding=UTF8)
     return base64_image
