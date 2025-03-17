@@ -21,13 +21,9 @@ GITHUB_API_URL = "https://api.github.com"
 GITHUB_API_VERSION: str = "2022-11-28"
 GITHUB_APP_ID = int(get_env_var(name="GH_APP_ID"))
 GITHUB_APP_IDS: list[int] = list(
-    set(
-        [
-            GITHUB_APP_ID,  # Production or your local development
+    {GITHUB_APP_ID,  # Production or your local development
             844909,  # Production
-            901480,  # Staging
-        ]
-    )
+            901480,}
 )
 GITHUB_APP_NAME: str = get_env_var(name="GH_APP_NAME")
 GITHUB_APP_USER_ID: int = int(get_env_var(name="GH_APP_USER_ID"))
