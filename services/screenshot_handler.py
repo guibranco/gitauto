@@ -159,9 +159,7 @@ def get_target_paths(file_changes: list[dict[str, str]], repo_dir: str = None):
             print(f"Affected path: {path}")
 
         # Next.js App Router
-        elif "app/" in file_path and (
-            file_path.endswith(".tsx") or file_path.endswith(".jsx")
-        ):
+        elif "app/" in file_path and file_path.endswith((".tsx", ".jsx")):
             path = (
                 file_path.split("app/")[-1]
                 .replace("/page.tsx", "")
@@ -174,9 +172,7 @@ def get_target_paths(file_changes: list[dict[str, str]], repo_dir: str = None):
             print(f"Affected path: {path}")
 
         # Next.js Pages Router
-        elif "pages/" in file_path and (
-            file_path.endswith(".tsx") or file_path.endswith(".jsx")
-        ):
+        elif "pages/" in file_path and file_path.endswith((".tsx", ".jsx")):
             path = (
                 file_path.split("pages/")[-1]
                 .replace("index.tsx", "")
