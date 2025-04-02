@@ -7,12 +7,12 @@ from constants.messages import COMPLETED_PR
 
 def git_command(new_branch_name: str) -> str:
     return (
-        f"\n\n## Test these changes locally\n\n"
-        f"```\n"
-        f"git fetch origin\n"
+        "\n\n## Test these changes locally\n\n"
+        "```\n"
+        "git fetch origin\n"
         f"git checkout {new_branch_name}\n"
         f"git pull origin {new_branch_name}\n"
-        f"```"
+        "```"
     )
 
 
