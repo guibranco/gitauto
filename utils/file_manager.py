@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 
 from config import UTF8
+from security import safe_command
 
 
 def apply_patch(original_text: str, diff_text: str) -> str:
@@ -37,8 +38,7 @@ def apply_patch(original_text: str, diff_text: str) -> str:
         # Modified or deleted file
         else:
             with open(file=diff_fname, mode="r", encoding=UTF8, newline="") as diff:
-                subprocess.run(
-                    args=["patch", "-u", "--fuzz=3", org_fname],
+                safe_command.run(subprocess.run, args=["patch", "-u", "--fuzz=3", org_fname],
                     input=diff.read(),
                     text=True,
                     check=True,
@@ -150,8 +150,7 @@ def extract_file_name(diff_text: str) -> str:
 
 def run_command(command: str, cwd: str) -> str:
     try:
-        result: subprocess.CompletedProcess[str] = subprocess.run(
-            args=command,
+        result: subprocess.CompletedProcess[str] = safe_command.run(subprocess.run, args=command,
             capture_output=True,
             check=True,
             cwd=cwd,
