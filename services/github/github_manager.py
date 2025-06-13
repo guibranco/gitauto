@@ -44,6 +44,7 @@ from utils.text_copy import (
     request_issue_comment,
     request_limit_reached,
 )
+from security import safe_requests
 
 
 @handle_exceptions(default_return_value=None, raise_on_error=True)
@@ -117,7 +118,7 @@ def commit_changes_to_remote_branch(
     url: str = f"{GITHUB_API_URL}/repos/{owner}/{repo}/contents/{file_path}"
 
     # Get the SHA of the file if it exists
-    response = requests.get(
+    response = safe_requests.get(
         url=url, headers=create_headers(token=token), timeout=TIMEOUT_IN_SECONDS
     )
     original_text = ""
@@ -348,7 +349,7 @@ def get_installed_owners_and_repos(token: str) -> list[dict[str, int | str]]:
     owners_repos = []
     page = 1
     while True:
-        response: requests.Response = requests.get(
+        response: requests.Response = safe_requests.get(
             url=f"{GITHUB_API_URL}/installation/repositories",
             headers=create_headers(token=token),
             params={"per_page": 100, "page": page},
@@ -383,7 +384,7 @@ def get_issue_comments(
     owner: str, repo: str, issue_number: int, token: str
 ) -> list[str]:
     """https://docs.github.com/en/rest/issues/comments#list-issue-comments"""
-    response = requests.get(
+    response = safe_requests.get(
         url=f"{GITHUB_API_URL}/repos/{owner}/{repo}/issues/{issue_number}/comments",
         headers=create_headers(token=token),
         timeout=TIMEOUT_IN_SECONDS,
@@ -413,7 +414,7 @@ def get_latest_remote_commit_sha(
     """SHA stands for Secure Hash Algorithm. It's a unique identifier for a commit.
     https://docs.github.com/en/rest/git/refs?apiVersion=2022-11-28#get-a-reference"""
     try:
-        response: requests.Response = requests.get(
+        response: requests.Response = safe_requests.get(
             url=f"{GITHUB_API_URL}/repos/{owner}/{repo}/git/ref/heads/{branch}",
             headers=create_headers(token=token),
             timeout=TIMEOUT_IN_SECONDS,
@@ -459,7 +460,7 @@ def get_oldest_unassigned_open_issue(
     """Get an oldest unassigned open issue without "gitauto" label in a repository. https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues"""
     page = 1
     while True:
-        response: requests.Response = requests.get(
+        response: requests.Response = safe_requests.get(
             url=f"{GITHUB_API_URL}/repos/{owner}/{repo}/issues",
             headers=create_headers(token=token),
             params={
@@ -491,7 +492,7 @@ def get_oldest_unassigned_open_issue(
 @handle_exceptions(default_return_value=None, raise_on_error=False)
 def get_owner_name(owner_id: int, token: str) -> str | None:
     """https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user-using-their-id"""
-    response: requests.Response = requests.get(
+    response: requests.Response = safe_requests.get(
         url=f"{GITHUB_API_URL}/user/{owner_id}",
         headers=create_headers(token=token),
         timeout=TIMEOUT_IN_SECONDS,
@@ -511,7 +512,7 @@ def get_remote_file_content(
     """https://docs.github.com/en/rest/repos/contents?apiVersion=2022-11-28"""
     url: str = f"{GITHUB_API_URL}/repos/{owner}/{repo}/contents/{file_path}?ref={ref}"
     headers: dict[str, str] = create_headers(token=token)
-    response: requests.Response = requests.get(
+    response: requests.Response = safe_requests.get(
         url=url, headers=headers, timeout=TIMEOUT_IN_SECONDS
     )
     response.raise_for_status()
@@ -535,7 +536,7 @@ def get_remote_file_tree(
     """
     response: requests.Response | None = None  # Otherwise response could be Unbound
     try:
-        response = requests.get(
+        response = safe_requests.get(
             url=f"{GITHUB_API_URL}/repos/{owner}/{repo}/git/trees/{ref}?recursive=1",
             headers=create_headers(token=token),
             timeout=TIMEOUT_IN_SECONDS,
